@@ -1,0 +1,62 @@
+ARG BASE_CONTAINER=jupyter/minimal-notebook
+FROM $BASE_CONTAINER
+
+LABEL maintainer="Jupyter Project <jupyter@googlegroups.com>"
+
+
+USER root
+
+#install golang
+
+ENV GOLANG_VERSION 1.12.6
+
+RUN set -eux; \
+	\
+# this "case" statement is generated via "update.sh"
+	dpkgArch="$(dpkg --print-architecture)"; \
+	\
+	url="https://golang.org/dl/go${GOLANG_VERSION}.linux-amd64.tar.gz"; \
+	wget -O go.tgz "$url"; \
+	tar -C /usr/local -xzf go.tgz; \
+	rm go.tgz; \
+	\
+	export PATH="/usr/local/go/bin:$PATH"; \
+	go version
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+
+# Install lgo dependencies 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		g++ \
+		gcc \
+		libc6-dev \
+		make \
+		pkg-config \
+                vim \
+                libzmq3-dev \
+                curl 
+
+
+# Install kubectl 
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
+ && chmod +x kubectl \
+ && mv kubectl /usr/local/bin/kubectl
+
+# install gophernotes
+RUN go get github.com/gopherdata/gophernotes \
+    && cp /go/bin/gophernotes /usr/local/bin/ \
+    && mkdir -p ~/.local/share/jupyter/kernels/gophernotes \
+    && cp -r /go/src/github.com/gopherdata/gophernotes/kernel/* ~/.local/share/jupyter/kernels/gophernotes 
+
+RUN chown -R ${NB_USER} ${HOME} $GOPATH 
+USER ${NB_USER}
+WORKDIR ${HOME}
+
+# install bash kernel
+RUN pip install bash_kernel && python -m bash_kernel.install
+
+
+
