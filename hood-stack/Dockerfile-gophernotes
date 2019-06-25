@@ -28,7 +28,7 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg2
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg2 curl
 
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
  && curl -oL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
@@ -43,8 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 		make \
 		pkg-config \
                 vim \
-                libzmq3-dev \
-                curl 
+                libzmq3-dev 
 
 
 # Install kubectl 
