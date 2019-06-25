@@ -30,6 +30,7 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 # Install lgo dependencies 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+                openssh-client \
 		g++ \
 		gcc \
 		libc6-dev \
@@ -45,6 +46,11 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s
  && chmod +x kubectl \
  && mv kubectl /usr/local/bin/kubectl
 
+# Install bosh
+RUN curl -Lo bosh https://github.com/cloudfoundry/bosh-cli/releases/download/v5.5.1/bosh-cli-5.5.1-linux-amd64 \
+  && chmod +x bosh \
+  && mv bosh /usr/local/bin
+
 # install gophernotes
 RUN go get github.com/gopherdata/gophernotes \
     && cp /go/bin/gophernotes /usr/local/bin/ \
@@ -58,5 +64,6 @@ WORKDIR ${HOME}
 # install bash kernel
 RUN pip install bash_kernel && python -m bash_kernel.install
 
-
+# install nbgitpuller
+RUN pip install nbgitpuller
 
