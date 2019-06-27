@@ -66,10 +66,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # && chmod +x kubectl \
 # && mv kubectl /usr/local/bin/kubectl
 
+# install jq
+RUN curl -Lo jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
+   && chmod +x jq \
+   && mv jq /usr/local/bin
+
 # Install bosh
 RUN curl -Lo bosh https://github.com/cloudfoundry/bosh-cli/releases/download/v5.5.1/bosh-cli-5.5.1-linux-amd64 \
   && chmod +x bosh \
   && mv bosh /usr/local/bin
+
+# Install credhub
+RUN curl -Lo credhub.tgz https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/2.5.1/credhub-linux-2.5.1.tgz \
+  && tar zxf credhub.tgz \
+  && chmod +x credhub \
+  && mv credhub /usr/local/bin \
+  && rm credhub.tgz
 
 # install gophernotes
 RUN go get github.com/gopherdata/gophernotes \
@@ -82,8 +94,10 @@ USER ${NB_USER}
 WORKDIR ${HOME}
 
 # install bash kernel
-RUN pip install bash_kernel && python -m bash_kernel.install
+RUN pip install bash_kernel && python -m bash_kernel.install && \
+  rm -rf /home/$NB_USER/.local && \
+  fix-permissions /home/$NB_USER
+
 
 # install nbgitpuller
 RUN pip install nbgitpuller
-
